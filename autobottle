@@ -1,0 +1,181 @@
+(function() {
+    'use strict';
+
+    var password;
+
+var pass1="LEgagExh72J80aH081f3t6hQfh52C236G32GyAdk!Dh";
+
+password=prompt('Please enter your password to view this page!',' ');
+
+if (password==pass1)
+  alert('Password Correct! Click OK to enter!');
+else
+   {
+       alert('Password Incorrect! Access Denied')
+    window.location="www.google.com;
+    }
+
+
+        var $ = window.jQuery;
+
+    const Tab = "⠀⠀ ";
+
+    const Hack = {
+        auto_bottle: {
+            activated: true,
+            hp: 21,
+        },
+        player_stats: {
+            activated: true,
+            blink: false,
+        },
+    }
+
+    const Player = {
+        ID: 0,
+        gear: {
+            head: false,
+            hand: false,
+            mount: false, // TODO
+            // other
+            diving: 0, // [0,1,2]
+            pilot: false,
+        },
+        stats: { },
+        inventory: [ ],
+        isAttacking: false,
+        alive: false,
+        angle: 0,
+        range: 70,
+        at: {
+            water: false,
+            workbench: false,
+            fire: false,
+            well: false,
+        },
+    };
+
+
+
+
+        let WS;
+
+    window.WebSocket = new Proxy(window.WebSocket, {
+
+        construct: function(target, args) {
+
+            WS = new target(...args);
+
+            if(Hack.player_stats.activated) { $('#player-stats').show() };
+
+            const messageHandler = (event) => {
+                var data;
+                if("string" === typeof event.data) { }
+                else {
+                    data = new Uint8Array(event.data);
+                    switch (data[0]) {
+                        case 16:
+                            Player.stats = {
+                                hp:    data[1],
+                                food:  data[2],
+                                temp:  data[3],
+                                water: data[4],
+                                air:   data[5],
+                                heat:  data[6],
+                                heal:  data[7],
+                            };
+                            $('#player-hp').html(data[1] * 2);
+                            $('#player-food').html(data[2]);
+                            $('#player-temp').html(data[3] + (100 - data[6]));
+                            $('#player-water').html(data[4]);
+                            break;
+                        case 37:
+                            var hp = (data[1] * 2);
+                            if(hp <= 31 && Hack.auto_bottle.activated == true) WS.send('[5,121]'); // 121
+                            break;
+                    }
+                }
+            };
+
+                        const closeHandler = (event) => { };
+
+            WS.addEventListener('message', messageHandler);
+            WS.addEventListener('close', closeHandler);
+
+            WS.send = new Proxy(WS.send, {
+                apply: function(target, _this, _arguments) {
+                    if(typeof _arguments[0] === 'string') { }
+                    return WS.readyState === WS.OPEN && Function.prototype.apply.apply(target, [_this, _arguments]);
+                }
+            });
+
+            return WS
+
+        }
+
+    });
+
+
+        const Theme = {
+        name: "Triade Theme",
+        colors: {
+            menuBarBackground: "rgb(35, 35, 35)",
+            menuBarText: "rgb(102, 0, 0)",
+            panelBackground: "rgb(0, 0, 0)",
+            componentBackground: "rgb(22, 22, 22)",
+            componentForeground: "rgb(255, 255, 255)",
+            textPrimary: "rgb(50, 65, 170)",
+            textSecondary: "rgb(115, 30, 200)",
+            textHover: "rgb(0, 0, 0)"
+        },
+        font: {
+            'fontFamily': 'Baloo Paaji',
+            'fontSize': '16px',
+            'fontWeight': '100'
+        },
+
+    }
+
+
+    let GUI = new guify({
+        title: "Auto Plugin",
+        theme: Theme,
+        align: "left",
+        width: 350,
+        barMode: "none",
+        panelMode: "none",
+        opacity: .95,
+        root: window.container,
+        open: true,
+        pollRateMS: 100,
+    });
+
+
+    GUI.Register([
+
+
+
+        {
+            type: "checkbox",
+            label: Tab + 'Auto Bottle',
+            object: Hack.auto_bottle,
+            property: 'activated',
+            onChange: (val) => {
+                Hack.auto_bottle.activated = val;
+            }
+        },
+
+        {
+            type: "range",
+            label: Tab + Tab + 'HP Limit',
+            min: 2,
+            max: 199,
+            step: 1,
+            object: Hack.auto_bottle,
+            property: 'hp',
+            scale: "linear",
+        }
+
+    ]);
+
+})();
